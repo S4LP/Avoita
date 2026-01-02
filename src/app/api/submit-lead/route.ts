@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import TelegramBot from 'node-telegram-bot-api';
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,20 +18,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
     }
 
+    // Initialize bot with polling disabled (we only send messages)
+    const bot = new TelegramBot(token, { polling: false });
+
     const text = `Новый лид с лендинга!\nИмя: ${name || 'Не указано'}\nEmail: ${email}\nТелефон: ${phone || 'Не указано'}\nTelegram: ${telegram || 'Не указано'}\nДругой контакт: ${otherContact || 'Не указано'}\nПредпочитаемый метод связи: ${preferredContact || 'Не указано'}\nГотов платить ежемесячно: ${monthlyPrice || 'Не указано'}\nСообщение: ${message || 'Нет'}`;
 
     const sendMessage = async (chatId: string) => {
-      const response = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          chat_id: chatId,
-          text,
-        }),
-      });
-      return response.ok;
+      try {
+        await bot.sendMessage(chatId, text);
+        return true;
+      } catch (error) {
+        console.error(`Failed to send message to ${chatId}:`, error);
+        return false;
+      }
     };
 
     const [success1, success2] = await Promise.all([sendMessage(chatId1), sendMessage(chatId2)]);
