@@ -20,6 +20,7 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function SubscriptionForm() {
+  console.log('SubscriptionForm component rendered');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -34,7 +35,7 @@ export default function SubscriptionForm() {
   });
 
   const onSubmit = async (data: FormData) => {
-    console.log('Form submitted with data:', data);
+    console.log('onSubmit called with data:', data);
     setIsSubmitting(true);
     setError('');
 
