@@ -34,6 +34,11 @@ export default function SubscriptionForm() {
     resolver: zodResolver(schema),
   });
 
+  const handleFormSubmit = (data: FormData) => {
+    console.log('handleSubmit called with data:', data);
+    onSubmit(data);
+  };
+
   const onSubmit = async (data: FormData) => {
     console.log('onSubmit called with data:', data);
     setIsSubmitting(true);
@@ -110,7 +115,10 @@ export default function SubscriptionForm() {
         </motion.div>
 
         <form
-          onSubmit={handleSubmit(onSubmit)}
+          onSubmit={(e) => {
+            console.log('Form submit event triggered');
+            handleSubmit(onSubmit)(e);
+          }}
           className="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg"
         >
           <div className="grid md:grid-cols-2 gap-6 mb-6">
