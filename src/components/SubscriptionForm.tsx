@@ -8,19 +8,18 @@ import { motion } from 'framer-motion';
 
 const schema = z.object({
   name: z.string().optional(),
-  email: z.string().email('Неверный email'),
+  email: z.string().min(1, 'Email обязателен').email('Введите корректный email'),
   phone: z.string().optional(),
   telegram: z.string().optional(),
   otherContact: z.string().optional(),
-  preferredContact: z.enum(['email', 'phone', 'telegram', 'other']).optional(),
-  monthlyPrice: z.enum(['free', '5', '10', '15']).optional(),
+  preferredContact: z.string().optional(),
+  monthlyPrice: z.string().optional(),
   message: z.string().optional(),
 });
 
 type FormData = z.infer<typeof schema>;
 
 export default function SubscriptionForm() {
-  console.log('SubscriptionForm component rendered');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -34,18 +33,11 @@ export default function SubscriptionForm() {
     resolver: zodResolver(schema),
   });
 
-  const handleFormSubmit = (data: FormData) => {
-    console.log('handleSubmit called with data:', data);
-    onSubmit(data);
-  };
-
   const onSubmit = async (data: FormData) => {
-    console.log('onSubmit called with data:', data);
     setIsSubmitting(true);
     setError('');
 
     try {
-      console.log('Sending request to /api/submit-lead');
       const response = await fetch('/api/submit-lead', {
         method: 'POST',
         headers: {
@@ -54,20 +46,14 @@ export default function SubscriptionForm() {
         body: JSON.stringify(data),
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
-
       if (response.ok) {
-        console.log('Success! Setting success state');
         setIsSuccess(true);
         reset();
       } else {
         const errorData = await response.json();
-        console.log('Error response:', errorData);
         setError(errorData.error || 'Произошла ошибка');
       }
     } catch (err) {
-      console.error('Fetch error:', err);
       setError('Произошла ошибка при отправке');
     } finally {
       setIsSubmitting(false);
@@ -115,10 +101,7 @@ export default function SubscriptionForm() {
         </motion.div>
 
         <form
-          onSubmit={(e) => {
-            console.log('Form submit event triggered');
-            handleSubmit(onSubmit)(e);
-          }}
+          onSubmit={handleSubmit(onSubmit)}
           className="max-w-2xl mx-auto bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg"
         >
           <div className="grid md:grid-cols-2 gap-6 mb-6">
@@ -129,9 +112,14 @@ export default function SubscriptionForm() {
               <input
                 {...register('name')}
                 type="text"
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
+                  errors.name ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                }`}
                 placeholder="Ваше имя"
               />
+              {errors.name && (
+                <p className="text-red-500 text-sm mt-1">{errors.name.message}</p>
+              )}
             </div>
 
             <div>
@@ -141,7 +129,9 @@ export default function SubscriptionForm() {
               <input
                 {...register('email')}
                 type="email"
-                className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white ${
+                  errors.email ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
+                }`}
                 placeholder="your@email.com"
               />
               {errors.email && (
